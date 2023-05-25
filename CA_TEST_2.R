@@ -1,26 +1,91 @@
 heartfailure <- read.csv("HeartFailure.csv", na ="")
 str(heartfailure)
 
-heartfailure$anaemia1 <- factor(heartfailure$anaemia)
-heartfailure$diabetes1 <- factor(heartfailure$diabetes)
-heartfailure$high_blood_pressure1 <- factor(heartfailure$high_blood_pressure)
-heartfailure$sex1 <- factor(heartfailure$sex)
-heartfailure$smoking1 <- factor(heartfailure$smoking)
-heartfailure$DEATH_EVENT1 <- factor(heartfailure$DEATH_EVENT)
-
+heartfailure$anaemia1 <- as.numeric(heartfailure$anaemia)
+heartfailure$diabetes1 <- as.numeric(heartfailure$diabetes)
+heartfailure$high_blood_pressure1 <- as.numeric(heartfailure$high_blood_pressure)
+heartfailure$sex1 <- as.numeric(heartfailure$sex)
+heartfailure$smoking1 <- as.numeric(heartfailure$smoking)
+heartfailure$DEATH_EVENT1 <- as.numeric(heartfailure$DEATH_EVENT)
 str(heartfailure)
 
 
 
 
-heartfailure$DEATH_EVENT <- heartfailure$DEATH_EVENT1
+# heartfailure$DEATH_EVENT <- heartfailure$DEATH_EVENT1
 
-pairs.panel(heartfailure,
+install.packages("psych")
+library(psych)
+pairs.panels(heartfailure,
             smooth = FALSE,
+            scale = FALSE,
+            ellipses = FALSE,
+            lm = FALSE,
+            jiggle = FALSE,
+            stars = TRUE,
+            ci = TRUE,
             density = TRUE,
             method = "spearman",
             pch = 21,
-            cor = TRUE, factor = TRUE)
+            cor = TRUE, factor = 2)
+
+cor(heartfailure$DEATH_EVENT1, heartfailure$age)
+cor(heartfailure$DEATH_EVENT1, heartfailure$anaemia1)
+cor(heartfailure$DEATH_EVENT1, heartfailure$creatinine_phosphokinase)
+cor(heartfailure$DEATH_EVENT1, heartfailure$diabetes1)
+cor(heartfailure$DEATH_EVENT1, heartfailure$ejection_fraction)
+cor(heartfailure$DEATH_EVENT1, heartfailure$high_blood_pressure1)
+cor(heartfailure$DEATH_EVENT1, heartfailure$platelets)
+cor(heartfailure$DEATH_EVENT1, heartfailure$serum_creatinine)
+cor(heartfailure$DEATH_EVENT1, heartfailure$serum_sodium)
+cor(heartfailure$DEATH_EVENT1, heartfailure$sex1)
+cor(heartfailure$DEATH_EVENT1, heartfailure$smoking1)
+cor(heartfailure$DEATH_EVENT1, heartfailure$time)
+
+# Examine linearity in more detail
+scatter.smooth(x = heartfailure$age,
+               y = heartfailure$DEATH_EVENT,
+               xlab = "Population (,000)",
+               ylab = "Murder %", main = "Correlation of murder ~ population")
+
+
+# Check for outliers
+opar <- par(no.readonly = TRUE)
+par(mfrow = c(4, 2)) # divide graph area in 3 rows by 2 columns
+attach(heartfailure)
+boxplot(DEATH_EVENT1,
+        main = "death",
+        sub = paste("Outlier rows: ",
+                    boxplot.stats(DEATH_EVENT1)$out)) # box plot for 'Death'
+boxplot(age,
+        main = "Age of patients",
+        sub = paste("Outlier rows: ",
+                    boxplot.stats(age)$out))
+boxplot(anaemia1,
+        main = "Box plot for patients with Anaemia",
+        sub = paste("Outlier rows: ",
+                    boxplot.stats(anaemia1)$out))
+boxplot(creatinine_phosphokinase,
+        main = "Box plot for creatinine phosphokinase")
+boxplot(ejection_fraction,
+        main = "Box plot for ejection fraction",
+        sub = paste("Outlier rows: ",
+                    boxplot.stats(ejection_fraction)$out))
+boxplot(platelets,
+        main = "Box plot for number of platelets in patients")
+
+boxplot(serum_creatinine,
+        main = "Box plot for serum creatinine")
+
+boxplot(serum_sodium,
+        main = "Box plot for serum soidum")
+
+boxplot(time,
+        main = "Box plot for time")
+
+detach(states)
+par(opar)
+
 set.seed(1)
 # formula is dependent ~ independent, independent
 attach(heartfailure)
@@ -41,8 +106,37 @@ shapiro.test(heartfailure$age)
 shapiro.test(heartfailure$age)
 shapiro.test(heartfailure$age)
 
+install.packages("e1071")
+library(e1071)
+opar <- par(no.readonly = TRUE)
+# Show 4 rows x 2 cols of charts
+par(mfrow = c(4,2))
+plot(density(heartfailure$DEATH_EVENT1),
+     main = "Density plot for Death",
+     sub = paste("skewness: ", round(e1071::skewness(heartfailure$DEATH_EVENT1), 2)))
+
+#Fill the area insode ghd plot with a color
+polygon(density(heartfailure$DEATH_EVENT1), col = "red")
 
 
+plot(density(heartfailure$DEATH_EVENT1),
+     main = "Density plot for Death",
+     sub = paste("skewness: ", round(e1071::skewness(heartfailure$DEATH_EVENT1), 2)))
+
+#Fill the area insode ghd plot with a color
+polygon(density(heartfailure$DEATH_EVENT1), col = "red")
+
+#Transforming the data
+install.packages("MASS")
+library(MASS)
+box_cox_transform_age <- boxcox(heartfailure$sex1 ~ heartfailure$diabetes)
+lambda_age <- box_cox_transform$x[which.max(box_cox_transform$y)]
+lambda_age
+normalized_population <- ((states$Population^lambda-1)/ lambda)
+hist(normalized_population)
+shapiro.test(normalized_population)
+cor(states$Murder, states$Population)
+cor(states$Murder, normalized_population)
 
 
 
@@ -145,7 +239,7 @@ paste("Correlation for Murder and Area: ", cor(states$Murder, states$Area))
 # It appears that the variable Area has a vary low correlation with Murder. 
 # Therefore I am going to remove it from the dataset. 
 # Alternatively we can choose to exclude these independent variables when
-# we are constructing the MLR model.
+# we are constructing the MLR model..
 
 # Q3b
 # Check for outliers
@@ -248,7 +342,7 @@ shapiro.test(states$`HS Grad`)
 shapiro.test(states$Frost)
 shapiro.test(states$Area)
 
-box_cox_transform <- boxcox(states$Murder ~ states$Illiteracy)
+box_cox_transform <- boxcox(heartfailure$DEATH_EVENT1 ~ heartfailure$age)
 lambda <- box_cox_transform$x[which.max(box_cox_transform$y)]
 lambda
 normalized_illiteracy <- ((states$Illiteracy^lambda-1)/ lambda)
