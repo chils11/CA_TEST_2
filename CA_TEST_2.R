@@ -101,10 +101,13 @@ shapiro.test(heartfailure$creatinine_phosphokinase)
 shapiro.test(heartfailure$diabetes)
 shapiro.test(heartfailure$ejection_fraction)
 shapiro.test(heartfailure$high_blood_pressure)
-shapiro.test(heartfailure$age)
-shapiro.test(heartfailure$age)
-shapiro.test(heartfailure$age)
-shapiro.test(heartfailure$age)
+shapiro.test(heartfailure$sex1)
+shapiro.test(heartfailure$platelets)
+shapiro.test(heartfailure$serum_creatinine)
+shapiro.test(heartfailure$smoking1)
+shapiro.test(heartfailure$time)
+shapiro.test(heartfailure$DEATH_EVENT1)
+
 
 install.packages("e1071")
 library(e1071)
@@ -119,233 +122,281 @@ plot(density(heartfailure$DEATH_EVENT1),
 polygon(density(heartfailure$DEATH_EVENT1), col = "red")
 
 
-plot(density(heartfailure$DEATH_EVENT1),
-     main = "Density plot for Death",
-     sub = paste("skewness: ", round(e1071::skewness(heartfailure$DEATH_EVENT1), 2)))
+plot(density(heartfailure$age),
+     main = "Density plot for age",
+     sub = paste("skewness: ", round(e1071::skewness(heartfailure$age), 2)))
 
 #Fill the area insode ghd plot with a color
-polygon(density(heartfailure$DEATH_EVENT1), col = "red")
+polygon(density(heartfailure$age), col = "red")
 
-#Transforming the data
-install.packages("MASS")
-library(MASS)
-box_cox_transform_age <- boxcox(heartfailure$sex1 ~ heartfailure$diabetes)
-lambda_age <- box_cox_transform$x[which.max(box_cox_transform$y)]
-lambda_age
-normalized_population <- ((states$Population^lambda-1)/ lambda)
-hist(normalized_population)
-shapiro.test(normalized_population)
-cor(states$Murder, states$Population)
-cor(states$Murder, normalized_population)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Practical 9
-
-# Q1
-states <- as.data.frame(state.x77)
-str(states)
-
-# Renaming Life Exp and HS Grad variables as 
-# these will cause possible issues when referring to
-# them since they contain a space.
-colnames(states)[colnames(states) == "Life Exp"] <- "Life_Exp"
-colnames(states)[colnames(states) == "HS Grad"] <- "HS_Grad"
-
-# Q3a
-# Examine initial linearity between variables in the dataset
-library(psych)
-pairs.panels(states,
-             smooth = FALSE,      # If TRUE, draws loess smooths
-             scale = FALSE,      # If TRUE, scales the correlation text font
-             density = TRUE,     # If TRUE, adds density plots and histograms
-             ellipses = FALSE,    # If TRUE, draws ellipses
-             method = "spearman",# Correlation method (also "pearson" or "kendall")
-             pch = 21,           # pch symbol
-             lm = FALSE,         # If TRUE, plots linear fit rather than the LOESS (smoothed) fit
-             cor = TRUE,         # If TRUE, reports correlations
-             jiggle = FALSE,     # If TRUE, data points are jittered
-             factor = 2,         # Jittering factor
-             hist.col = 4,       # Histograms color
-             stars = TRUE,       # If TRUE, adds significance level with stars
-             ci = TRUE)          # If TRUE, adds confidence intervals
-
-# Examine linearity in more detail
-scatter.smooth(x = states$Population,
-               y = states$Murder,
-               xlab = "Population (,000)",
-               ylab = "Murder %", main = "Correlation of murder ~ population")
-
-# chart appears to have medium correlation
-# low correlation (-0.2 < x < 0.2) suggests that 
-# much of variation of the response
-# variable (Y) is unexplained by the predictor (X)
-# in which case, we should probably look for better
-# explanatory variables
-cor(states$Murder, states$Population)
-
-scatter.smooth(x = states$Illiteracy,
-               y = states$Murder,
-               main = "Correlation of Murder ~ Illiteracy",
-               xlab = "Illiteracy %",
-               ylab = "Murder %")
-
-# Examining correlation between murder and illiteracy
-cor(states$Murder, states$Illiteracy)
-
-# This is a better correlation value between both variables.
-# Lets examine murder and frost variables for correlation.
-scatter.smooth(x = states$Frost,
-               y = states$Murder,
-               main = "Correlation of Murder ~ Frost",
-               xlab = "Frost",
-               ylab = "Murder %")
-cor(states$Murder, states$Frost)
-
-# Examining the other variables
-paste("Correlation for Murder and Frost: ", cor(states$Murder, states$Frost))
-paste("Correlation for Murder and Illiteracy: ", cor(states$Murder, states$Illiteracy))
-paste("Correlation for Murder and Population: ", cor(states$Murder, states$Population))
-paste("Correlation for Murder and HS Grad: ", cor(states$Murder, states$HS_Grad))
-paste("Correlation for Murder and Income: ", cor(states$Murder, states$Income))
-paste("Correlation for Murder and Life Exp: ", cor(states$Murder, states$Life_Exp))
-paste("Correlation for Murder and Area: ", cor(states$Murder, states$Area))
-
-# It appears that the variable Area has a vary low correlation with Murder. 
-# Therefore I am going to remove it from the dataset. 
-# Alternatively we can choose to exclude these independent variables when
-# we are constructing the MLR model..
-
-# Q3b
-# Check for outliers
-opar <- par(no.readonly = TRUE)
-par(mfrow = c(4, 2)) # divide graph area in 3 rows by 2 columns
-attach(states)
-boxplot(Murder,
-        main = "Murder",
-        sub = paste("Outlier rows: ",
-                    boxplot.stats(Murder)$out)) # box plot for 'murder'
-boxplot(Population,
-        main = "Population",
-        sub = paste("Outlier rows: ",
-                    boxplot.stats(Population)$out)) # box plot for 'Population'
-boxplot(states$HS_Grad,
-        main = "Graduation",
-        sub = paste("Outlier rows: ",
-                    boxplot.stats(states$HS_Grad)$out)) # box plot for 'HS Grad'
-boxplot(Illiteracy,
-        main = "Illiteracy",
-        sub = paste("Outlier rows: ",
-                    boxplot.stats(Illiteracy)$out)) # box plot for 'HS Grad'
-boxplot(Income,
-        main = "Income",
-        sub = paste("Outlier rows: ",
-                    boxplot.stats(Income)$out)) # box plot for 'HS Grad'
-boxplot(Frost,
-        main = "Frost",
-        sub = paste("Outlier rows: ",
-                    boxplot.stats(Frost)$out)) # box plot for 'HS Grad'
-boxplot(states$Life_Exp,
-        main = "Life Exp",
-        sub = paste("Outlier rows: ",
-                    boxplot.stats(states$Life_Exp)$out)) # box plot for 'HS␣Grad'
-detach(states)
-par(opar)
-
-# Both the population and Income variables contain outliers.
-# Use boxplot.stats() function to generate relevant outliers
-outlier_values <- boxplot.stats(states$Population)$out # outlier values.
-paste("Population outliers: ", paste(outlier_values, collapse=", "))
-
-# Use boxplot.stats() function to generate relevant outliers
-outlier_values <- boxplot.stats(states$Income)$out # outlier values.
-paste("Income outliers: ", paste(outlier_values, collapse=", "))
-
-states <- subset(states, states$Population != 21198 & 
-                   states$Population != 11197 &
-                   states$Population != 18076 &
-                   states$Population != 11860 &
-                   states$Population != 12237)
-
-states <- subset(states, states$Income != 6315)
-
-install.packages("e1071")
-library(e1071)
-opar <- par(no.readonly = TRUE)
-# Show 4 rows x 2 cols of charts
-par(mfrow = c(4,2))
-plot(density(states$Population),
-     main = "Density plot for population",
-     sub = paste("skewness: ", round(e1071::skewness(states$Population), 2)))
+plot(density(heartfailure$anaemia1),
+     main = "Density plot for anaemia",
+     sub = paste("skewness: ", round(e1071::skewness(heartfailure$anaemia1), 2)))
 
 #Fill the area insode ghd plot with a color
-polygon(density(states$Population), col = "red")
+polygon(density(heartfailure$anaemia1), col = "red")
 
-# Skewness of < 1 or > 1 is highly skewed
-# -1 to -0.5 and 0.5 to 1 moderately skewed
-# -0.5 t0 0.5 = approx symetrical
+plot(density(heartfailure$creatinine_phosphokinase),
+     main = "Density plot for creatinine_phosphokinase",
+     sub = paste("skewness: ", round(e1071::skewness(heartfailure$creatinine_phosphokinase), 2)))
 
-shapiro.test(states$Population)
-# option 1 drop the model and dont use in the model
-# option 2 use the variable and ignore MLR assumptions
-# Option 3 transform the variable to make it more normally distributed
+#Fill the area insode ghd plot with a color
+polygon(density(heartfailure$creatinine_phosphokinase), col = "red")
 
+plot(density(heartfailure$diabetes1),
+     main = "Density plot for diabetes",
+     sub = paste("skewness: ", round(e1071::skewness(heartfailure$diabetes1), 2)))
+
+#Fill the area insode ghd plot with a color
+polygon(density(heartfailure$diabetes1), col = "red")
+
+plot(density(heartfailure$ejection_fraction),
+     main = "Density plot for ejection fraction",
+     sub = paste("skewness: ", round(e1071::skewness(heartfailure$ejection_fraction), 2)))
+
+#Fill the area insode ghd plot with a color
+polygon(density(heartfailure$ejection_fraction), col = "red")
+
+
+plot(density(heartfailure$high_blood_pressure1),
+     main = "Density plot for high blood pressure",
+     sub = paste("skewness: ", round(e1071::skewness(heartfailure$high_blood_pressure1), 2)))
+
+#Fill the area insode ghd plot with a color
+polygon(density(heartfailure$high_blood_pressure1), col = "red")
+
+plot(density(heartfailure$platelets),
+     main = "Density plot for platelets",
+     sub = paste("skewness: ", round(e1071::skewness(heartfailure$platelets), 2)))
+
+#Fill the area insode ghd plot with a color
+polygon(density(heartfailure$platelets), col = "red")
+
+plot(density(heartfailure$serum_creatinine),
+     main = "Density plot for serum creatinine",
+     sub = paste("skewness: ", round(e1071::skewness(heartfailure$serum_creatinine), 2)))
+
+#Fill the area insode ghd plot with a color
+polygon(density(heartfailure$serum_creatinine), col = "red")
+
+plot(density(heartfailure$serum_sodium),
+     main = "Density plot for serum sodium",
+     sub = paste("skewness: ", round(e1071::skewness(heartfailure$serum_sodium), 2)))
+
+#Fill the area insode ghd plot with a color
+polygon(density(heartfailure$serum_sodium), col = "red")
+
+plot(density(heartfailure$sex1),
+     main = "Density plot for sex",
+     sub = paste("skewness: ", round(e1071::skewness(heartfailure$sex1), 2)))
+
+#Fill the area insode ghd plot with a color
+polygon(density(heartfailure$sex1), col = "red")
+
+
+plot(density(heartfailure$smoking1),
+     main = "Density plot for smoking",
+     sub = paste("skewness: ", round(e1071::skewness(heartfailure$smoking1), 2)))
+
+#Fill the area insode ghd plot with a color
+polygon(density(heartfailure$smoking1), col = "red")
+
+plot(density(heartfailure$time),
+     main = "Density plot for time",
+     sub = paste("skewness: ", round(e1071::skewness(heartfailure$time), 2)))
+
+#Fill the area insode ghd plot with a color
+polygon(density(heartfailure$time), col = "red")
+
+
+
+# Removing all the outliers in the dataset for all variables
+# Use boxplot.stats() function to generate relevant outliers
+outlier_values <- boxplot.stats(heartfailure$creatinine_phosphokinase)$out # outlier values.
+paste("outliers: ", paste(outlier_values, collapse=", "))
+
+heartfailure <- subset(heartfailure, heartfailure$creatinine_phosphokinase != 7861 & 
+                               heartfailure$creatinine_phosphokinase != 2656 & 
+                               heartfailure$creatinine_phosphokinase != 1380 & 
+                               heartfailure$creatinine_phosphokinase != 3964 & 
+                               heartfailure$creatinine_phosphokinase != 7702 & 
+                               heartfailure$creatinine_phosphokinase != 5882 & 
+                               heartfailure$creatinine_phosphokinase != 5209 & 
+                               heartfailure$creatinine_phosphokinase != 1876 & 
+                               heartfailure$creatinine_phosphokinase != 1808 & 
+                               heartfailure$creatinine_phosphokinase != 4540 & 
+                               heartfailure$creatinine_phosphokinase != 1548 & 
+                               heartfailure$creatinine_phosphokinase != 1610 & 
+                               heartfailure$creatinine_phosphokinase != 2261 & 
+                               heartfailure$creatinine_phosphokinase != 1846 & 
+                               heartfailure$creatinine_phosphokinase != 2334 & 
+                               heartfailure$creatinine_phosphokinase != 2442 & 
+                               heartfailure$creatinine_phosphokinase != 3966 & 
+                               heartfailure$creatinine_phosphokinase != 1419 & 
+                               heartfailure$creatinine_phosphokinase != 1896 & 
+                               heartfailure$creatinine_phosphokinase != 1767 & 
+                               heartfailure$creatinine_phosphokinase != 2281 & 
+                               heartfailure$creatinine_phosphokinase != 2794 & 
+                               heartfailure$creatinine_phosphokinase != 2017 & 
+                               heartfailure$creatinine_phosphokinase != 2522 & 
+                               heartfailure$creatinine_phosphokinase != 2695 &
+                               heartfailure$creatinine_phosphokinase != 1688 & 
+                               heartfailure$creatinine_phosphokinase != 1820 & 
+                               heartfailure$creatinine_phosphokinase != 2060 & 
+                               heartfailure$creatinine_phosphokinase != 2413)
+
+#Removing the outliers in ejection fraction
+outlier_values <- boxplot.stats(heartfailure$ejection_fraction)$out # outlier values.
+paste("outliers: ", paste(outlier_values, collapse=", "))
+
+heartfailure <- subset(heartfailure, heartfailure$ejection_fraction != 80 & 
+                               heartfailure$ejection_fraction != 70)
+
+#Removing the outliers in serum creatinine
+outlier_values <- boxplot.stats(heartfailure$serum_creatinine)$out # outlier values.
+paste("outliers: ", paste(outlier_values, collapse=", "))
+
+heartfailure <- subset(heartfailure, heartfailure$serum_creatinine != 2.7 &
+                               heartfailure, heartfailure$serum_creatinine != 9.4 &
+                               heartfailure, heartfailure$serum_creatinine != 4 &
+                               heartfailure, heartfailure$serum_creatinine != 5.8 &
+                               heartfailure, heartfailure$serum_creatinine != 3.5 &
+                               heartfailure, heartfailure$serum_creatinine != 3 &
+                               heartfailure, heartfailure$serum_creatinine != 4.4 &
+                               heartfailure, heartfailure$serum_creatinine != 2.7 &
+                               heartfailure, heartfailure$serum_creatinine != 2.9 &
+                               heartfailure, heartfailure$serum_creatinine != 2.5 &
+                               heartfailure, heartfailure$serum_creatinine != 3.2 &
+                               heartfailure, heartfailure$serum_creatinine != 3.7 &
+                               heartfailure, heartfailure$serum_creatinine != 3.4 &
+                               heartfailure, heartfailure$serum_creatinine != 2.5)
+
+#Removing the outliers in platelets
+outlier_values <- boxplot.stats(heartfailure$platelets)$out # outlier values.
+paste("outliers: ", paste(outlier_values, collapse=", "))
+
+heartfailure <- subset(heartfailure, heartfailure$platelets != 454000 &
+                               heartfailure$platelets != 47000 &
+                               heartfailure$platelets != 451000 &
+                               heartfailure$platelets != 461000 &
+                               heartfailure$platelets != 497000 &
+                               heartfailure$platelets != 621000 &
+                               heartfailure$platelets != 850000 &
+                               heartfailure$platelets != 448000 &
+                               heartfailure$platelets != 481000 &
+                               heartfailure$platelets != 504000 &
+                               heartfailure$platelets != 62000 &
+                               heartfailure$platelets != 533000 &
+                               heartfailure$platelets != 25100 &
+                               heartfailure$platelets != 451000)
+
+#Removing the outliers in serum sodium
+outlier_values <- boxplot.stats(heartfailure$serum_sodium)$out # outlier values.
+paste("outliers: ", paste(outlier_values, collapse=", "))
+
+heartfailure <- subset(heartfailure, heartfailure$serum_sodium != 121 &
+                               heartfailure$serum_sodium != 124 &
+                               heartfailure$serum_sodium != 113)
+                       
 
 #Transforming the data
-install.packages("MASS")
-library(MASS)
-box_cox_transform <- boxcox(states$Murder ~ states$Population)
-lambda <- box_cox_transform$x[which.max(box_cox_transform$y)]
-lambda
-normalized_population <- ((states$Population^lambda-1)/ lambda)
-hist(normalized_population)
-shapiro.test(normalized_population)
-cor(states$Murder, states$Population)
-cor(states$Murder, normalized_population)
+install.packages("recipes")
+library(recipes)
+recipe_obj <- recipe(DEATH_EVENT1 ~ anaemia1, data = heartfailure) %>%
+        step_YeoJohnson(all_predictors())
+prepped_recipe <- prep(recipe_obj)
+
+transformed_data <- bake(prepped_recipe, new_data = heartfailure)
+transformed_deathevent <- transformed_data$DEATH_EVENT1
+shapiro.test(transformed_deathevent)
+hist(transformed_deathevent)
+
+# Creating training and testing data
+# make this example reproducible
+attach(heartfailure)
+set.seed(1)
+no_rows_data <- nrow(heartfailure)
+sample <- sample(1:no_rows_data, size = round(0.7 * no_rows_data), replace = FALSE)
+# 70% training, 30% testing
+training_data <- heartfailure[sample, ]
+testing_data <- heartfailure[-sample, ]
+
+first_model <- glm(DEATH_EVENT1 ~ age + anaemia1 + creatinine_phosphokinase + ejection_fraction + diabetes1 + 
+                           sex1 + platelets + serum_creatinine + serum_sodium + smoking1 + time + high_blood_pressure1,
+                                family="binomial", 
+                                data=training_data)
+
+Second_model <- glm(DEATH_EVENT1 ~ age + ejection_fraction + 
+                          + serum_sodium +time,
+                   family="binomial", 
+                   data=training_data)
 
 
 
-plot(density(states$Population),
-     main = "Density plot for population",
-     sub = paste("skewness: ", round(e1071::skewness(states$Income), 2)))
+#Measuring the AIC for the two models built
+# Remeber the smallest AIC is the best model to use
+stepAIC(first_model, direction="backward")
 
-shapiro.test(states$Income)
-shapiro.test(states$Illiteracy)
-shapiro.test(states$`Life Exp`)
-shapiro.test(states$Murder)
-shapiro.test(states$`HS Grad`)
-shapiro.test(states$Frost)
-shapiro.test(states$Area)
 
-box_cox_transform <- boxcox(heartfailure$DEATH_EVENT1 ~ heartfailure$age)
-lambda <- box_cox_transform$x[which.max(box_cox_transform$y)]
-lambda
-normalized_illiteracy <- ((states$Illiteracy^lambda-1)/ lambda)
-normalized_illiteracy
-hist(normalized_illiteracy)
-shapiro.test(normalized_illiteracy)
+# measruing the AIC foe the second model
+stepAIC(Second_model, direction="backward")
+
+install.packages("leaps")
+library(leaps)
+
+MLR_subset_selection <-regsubsets(DEATH_EVENT1 ~ age + anaemia1 + creatinine_phosphokinase + ejection_fraction + diabetes1 + 
+                                          sex1 + platelets + serum_creatinine + serum_sodium + smoking1 + time + high_blood_pressure1, data=training_data, nbest=6)
+plot(MLR_subset_selection, scale="adjr2")
+
+
+studentized_fit <- rstudent(first_model)
+hist(studentized_fit, 
+     breaks=10, 
+     freq=FALSE, 
+     xlab="Studentized Residual", 
+     main="Distribution of Errors")
+
+
+
+summary(first_model)
+
+
+confint(first_model)
+
+
+predicted_death <- predict(third_model, training_data)
+
+
+actual_prediction <- data.frame(cbind(actuals = testing_data$DEATH_EVENT1,
+                                     predicted = predicted_death))
+
+
+head(actual_prediction)
+
+cor_accuracy <- cor(actual_prediction)
+cor_accuracy
+
+third_model <- glm(DEATH_EVENT1 ~ age + diabetes1 + high_blood_pressure1,
+                   family="binomial", 
+                   data=training_data)
+
+stepAIC(third_model, direction="backward")
+
+
+
+#Will the patient die if diabetes =1, age = 80, smoking = 1, high blood pressure = 1
+
+question <- data.frame(diabetes1 = c(1),
+                       age = c(80),
+                       smoking1 = c(1),
+                       high_blood_pressure1 = c(1)
+                       )
+
+
+Death_prediction <- predict(third_model, question)
+print(Death_prediction) 
+
+
+
+
+
